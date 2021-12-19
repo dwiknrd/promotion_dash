@@ -91,6 +91,7 @@ list_category = [
 
 # 2. Create a Dash app instance
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+server = app.server
 
 app.layout = html.Div(children=[
     html.Br(),
