@@ -100,6 +100,22 @@ app.title = 'Employee Promotion'
 server = app.server
 
 app.layout = html.Div(children=[
+    dbc.NavbarSimple(
+        children=[dbc.DropdownMenu(
+            children=[
+                dbc.DropdownMenuItem("More pages", header=True),
+                dbc.DropdownMenuItem("Prediction", href="#"),
+            ],
+            nav=True,
+            in_navbar=True,
+            label="Pages",
+        ),
+        ],
+        brand="",
+        brand_href="#",
+        color="info",
+        dark=True,
+        ),
     html.Br(),
     html.H1(children='Employee Promotion Analysis'),
     html.Br(),
