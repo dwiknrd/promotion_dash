@@ -35,7 +35,12 @@ promotion[['department','region','education',
 
 # previous_rating_&_education
 dept_hr = promotion[promotion['department'] == 'HR']
-
+department_option = []
+for dept in promotion['department'].unique():
+    department_option.append(
+        {'label': dept,
+        'value': dept}
+    )
 
 # First card content - Information
 card_information = [
@@ -90,7 +95,7 @@ list_category = [
 ]
 
 # 2. Create a Dash app instance
-app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = dash.Dash(external_stylesheets=[dbc.themes.MINTY])
 app.title = 'Employee Promotion'
 server = app.server
 
@@ -116,7 +121,7 @@ app.layout = html.Div(children=[
         dcc.Dropdown(id='category_promotion_picker',
                     options=list_category,
                     value='department')
-    ),
+    ), html.Br(),
     dbc.Row(
         [
             dbc.Col(dcc.Graph(
@@ -125,46 +130,22 @@ app.layout = html.Div(children=[
             )),
         ],
     className="mb-4"
-    ), html.Br(),
+    ), html.Br(), html.Hr(),
+
+    dbc.Row(
+        dcc.Dropdown(id='department_picker',
+                    options=department_option,
+                    value='HR')
+    ), html.Br(), 
 
     # Here for the second row
     dbc.Row(
         [
             dbc.Col(dcc.Graph(
                 id='previous_rating_education',
-                figure=px.density_heatmap(
-                                        dept_hr,
-                                        x = 'previous_year_rating',
-                                        y = 'education',
-                                        title = 'Number of Employee by Previous Rating and Education',
-                                        labels={
-                                            'education': 'Education',
-                                            'previous_year_rating': 'Previous Year Rating'
-                                        },
-                                        template = 'ggplot2',
-                                        color_continuous_scale=color_pln
-                                        )
-
             )),
             dbc.Col(dcc.Graph(
                 id='relation_length_service',
-                figure=px.scatter(
-                                dept_hr,
-                                x = 'length_of_service',
-                                y = 'avg_training_score',
-                                title = 'The Relation of Length of Service and Average Training Score',
-                                color = 'KPIs_met >80%',
-                                facet_col = 'is_promoted',
-                                size = 'no_of_trainings',
-                                color_discrete_sequence=color_pln,
-                                labels = {
-                                        'length_of_service' : 'Length of Service',
-                                        'avg_training_score' : 'Score',
-                                        'KPIs_met >80%': 'KPIs met >80%?',
-                                        'no_of_trainings': 'No. of Trainings',
-                                        'is_promoted': 'Promoted Status'
-                                        }
-                                )
 
             ))
         ],
@@ -195,6 +176,56 @@ def update_figure(value):
 
     return bar_graph
 
+
+@app.callback(
+    Output('previous_rating_education', 'figure'),
+    Input('department_picker', 'value')
+)
+
+def update_department_heatmap(dept_value):
+    dept_pick = promotion[promotion['department'] == dept_value]
+
+    heatmap_graph = px.density_heatmap(
+                                        dept_pick,
+                                        x = 'previous_year_rating',
+                                        y = 'education',
+                                        title = 'Number of Employee by Previous Rating and Education',
+                                        labels={
+                                            'education': 'Education',
+                                            'previous_year_rating': 'Previous Year Rating',
+                                            'count': 'Frequency',
+                                        },
+                                        template = 'ggplot2',
+                                        color_continuous_scale=color_pln
+                                        )
+    return heatmap_graph
+
+@app.callback(
+    Output('relation_length_service', 'figure'),
+    Input('department_picker', 'value')
+)
+
+def update_department_scatter(scatter_dept_value):
+    dept_pick = promotion[promotion['department'] == scatter_dept_value]
+
+    scatter_graph = px.scatter(
+                                dept_pick,
+                                x = 'length_of_service',
+                                y = 'avg_training_score',
+                                title = 'The Relation of Length of Service and Average Training Score',
+                                color = 'KPIs_met >80%',
+                                facet_col = 'is_promoted',
+                                size = 'no_of_trainings',
+                                color_discrete_sequence=color_pln,
+                                labels = {
+                                        'length_of_service' : 'Length of Service',
+                                        'avg_training_score' : 'Score',
+                                        'KPIs_met >80%': 'KPIs met >80%?',
+                                        'no_of_trainings': 'No. of Trainings',
+                                        'is_promoted': 'Promoted Status'
+                                        }
+                                )
+    return scatter_graph
 
 
 # 5. Start the Dash server
